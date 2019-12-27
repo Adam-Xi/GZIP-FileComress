@@ -13,7 +13,7 @@ int main()
 	lz.CompressFile(path, file);
 	huff.CompressFile(path);
 	// remove(file.c_str());
-# elif 1
+# else
 	std::string path("./1.gzip");
 	std::string file;
 	// Ω‚—πÀı
