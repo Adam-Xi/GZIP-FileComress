@@ -4,8 +4,8 @@
 int main()
 {
 	FileCompressHuffman fc;
-	fc.CompressFile("../测试用例/他們.mp3");
-	fc.UnCompressFile("他們.gzip");
+	fc.CompressFile("../测试用例/南京中山陵.jpg");
+	fc.UnCompressFile("南京中山陵.gzip");
 
 	return 0;
 }
