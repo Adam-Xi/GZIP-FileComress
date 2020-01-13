@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>  //reverse()
 #include <fstream>
 #include "Huffman.hpp"
 
@@ -13,10 +14,10 @@
 struct CharInfo
 {
 	unsigned char _ch;  //具体字符
-	size_t _count;  //字符出现次数
+	int _count;  //字符出现次数
 	std::string _strCode;  //字符编码
 
-	CharInfo(size_t count = 0)
+	CharInfo(int count = 0)
 		: _count(count)
 	{}
 

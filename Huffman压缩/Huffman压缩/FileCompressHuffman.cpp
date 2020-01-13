@@ -15,7 +15,10 @@ FileCompressHuffman::FileCompressHuffman()
 //文件压缩主逻辑
 void FileCompressHuffman::CompressFile(const std::string& path)
 {
-	FILE* fIn = fopen(path.c_str(), "rb");
+	//============================================================
+	//FILE* fIn = fopen(path.c_str(), "rb");
+	FILE* fIn = fopen(path.c_str(), "r");  //必须以文本形式打开进行压缩
+	//============================================================
 	if (nullptr == fIn)
 	{
 		assert(false);
@@ -36,6 +39,23 @@ void FileCompressHuffman::CompressFile(const std::string& path)
 			_fileInfo[pReadBuff[i]]._count++;
 		}
 	}
+	//==============================================
+	//TODO
+	/*
+	int kinds = 0;
+	for (int i = 0; i < 255; ++i)   //记录每个字符出现的次数
+	{
+		if (_fileInfo[i]._count)
+		{
+			kinds++;
+		}
+	}
+	if (kinds == 1)
+	{
+		_fileInfo[' ']._count++;
+	}
+	*/
+	//==============================================
 
 	//2、以字符出现的次数为权值创建huffman树
 	HuffmanTree<CharInfo> tree(_fileInfo, CharInfo());  //出现0次的无效的字符将不会参与huffman树的构造
@@ -44,7 +64,7 @@ void FileCompressHuffman::CompressFile(const std::string& path)
 	GenerateHuffmanCode(tree.GetRoot());
 
 	//4、用获取到的编码重新改写源文件
-	    //获取压缩后的文件名称，因为使用gzip算法压缩，所以压缩后的文件名称以".gzip"结尾
+	    //获取压缩后的文件名称，因为使用gzip算法压缩，所以约定压缩后的文件名称以".gzip"结尾
 	std::string NewFileNameOnly = GetFileNameOnly(path);
 	NewFileNameOnly += ".gzip";
 	//std::cout << NewFileNameOnly << std::endl;  //测试
@@ -57,7 +77,7 @@ void FileCompressHuffman::CompressFile(const std::string& path)
 	}
 	WriteHead(fOut, path);
 	fseek(fIn, 0, SEEK_SET);
-	int ch = 0;
+	unsigned char ch = 0;
 	int bitCount = 0;
 	while (true)
 	{
@@ -170,8 +190,8 @@ void FileCompressHuffman::WriteHead(FILE*  fOut, const std::string& fileName)
 			lineCount++;
 			strChCount += _fileInfo[i]._ch;
 			strChCount += ':';
-			itoa(_fileInfo[i]._count, szValue, 10);
-			strChCount += szValue;
+			//itoa(_fileInfo[i]._count, szValue, 10);
+			strChCount += std::to_string(_fileInfo[i]._count);
 			strChCount += '\n';
 		}
 	}
@@ -228,7 +248,7 @@ void FileCompressHuffman::UnCompressFile(const std::string& path)
 	// 还原huffman树
 	HuffmanTree<CharInfo> tree(_fileInfo, CharInfo());
 
-	FILE* fOut = fopen(NewFileName.c_str(), "wb");
+	FILE* fOut = fopen(NewFileName.c_str(), "w");  //必须以文本文件形式打开文件进行写（解压缩）
 	if (nullptr == fOut)
 	{
 		assert(false);
@@ -239,7 +259,7 @@ void FileCompressHuffman::UnCompressFile(const std::string& path)
 	char* pReadBuff = new char[1024];
 	char ch = 0;
 	HuffmanTreeNode<CharInfo>* pCur = tree.GetRoot();
-	size_t fileSize = pCur->_Weight._count;
+	long long fileSize = pCur->_Weight._count;
 	size_t unCount = 0;
 	while (true)
 	{
@@ -255,6 +275,16 @@ void FileCompressHuffman::UnCompressFile(const std::string& path)
 			ch = pReadBuff[i];
 			for (int pos = 0; pos < 8; pos++)
 			{
+				if (nullptr == pCur->_pLeft && nullptr == pCur->_pRight)
+				{
+					//unCount++;
+					fputc(pCur->_Weight._ch, fOut);
+					if (unCount == fileSize)
+					{
+						break;
+					}
+					pCur = tree.GetRoot();
+				}
 				if (ch & 0x80)
 				{
 					pCur = pCur->_pRight;
@@ -274,9 +304,9 @@ void FileCompressHuffman::UnCompressFile(const std::string& path)
 					}
 					pCur = tree.GetRoot();
 				}
-			}
-		}
-	}
+			}  // end for pos
+		}  // end for i
+	}  // end while
 
 	delete[] pReadBuff;
 	fclose(fIn);
