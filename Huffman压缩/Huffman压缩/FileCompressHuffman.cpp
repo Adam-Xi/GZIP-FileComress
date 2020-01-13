@@ -15,10 +15,7 @@ FileCompressHuffman::FileCompressHuffman()
 //文件压缩主逻辑
 void FileCompressHuffman::CompressFile(const std::string& path)
 {
-	//============================================================
-	//FILE* fIn = fopen(path.c_str(), "rb");
-	FILE* fIn = fopen(path.c_str(), "rb");  //必须以文本形式打开进行压缩
-	//============================================================
+	FILE* fIn = fopen(path.c_str(), "rb");  
 	if (nullptr == fIn)
 	{
 		assert(false);
@@ -248,7 +245,7 @@ void FileCompressHuffman::UnCompressFile(const std::string& path)
 	// 还原huffman树
 	HuffmanTree<CharInfo> tree(_fileInfo, CharInfo());
 
-	FILE* fOut = fopen(NewFileName.c_str(), "wb");  //必须以文本文件形式打开文件进行写（解压缩）
+	FILE* fOut = fopen(NewFileName.c_str(), "wb");  
 	if (nullptr == fOut)
 	{
 		assert(false);
