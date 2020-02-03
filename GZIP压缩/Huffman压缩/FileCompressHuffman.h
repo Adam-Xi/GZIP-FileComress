@@ -46,3 +46,4 @@ private:
 private:
 	std::vector<CharInfo> _fileInfo;
 };
+
