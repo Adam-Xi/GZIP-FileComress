@@ -5,7 +5,6 @@
 #include "Huffman.hpp"
 #include "common.h"
 
-
 //将权值用结构体表示,所以需要在huffman中的操作符进行重载
 struct CharInfo
 {
