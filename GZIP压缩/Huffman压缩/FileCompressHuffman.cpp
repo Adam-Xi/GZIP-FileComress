@@ -95,6 +95,7 @@ void FileCompressHuffman::CompressFile(const std::string& path)
 			}
 		}
 	}
+    
 	//最后一次ch中可能不够8个bit位
 	if (bitCount < 8)
 	{
