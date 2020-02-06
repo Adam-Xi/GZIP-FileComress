@@ -38,22 +38,6 @@ void FileCompressHuffman::CompressFile(const std::string& path)
 		}
 	}
 	//==============================================
-	//TODO
-	/*
-	int kinds = 0;
-	for (int i = 0; i < 255; ++i)   //记录每个字符出现的次数
-	{
-		if (_fileInfo[i]._count)
-		{
-			kinds++;
-		}
-	}
-	if (kinds == 1)
-	{
-		_fileInfo[' ']._count++;
-	}
-	*/
-	//==============================================
 
 	//2、以字符出现的次数为权值创建huffman树
 	HuffmanTree<CharInfo> tree(_fileInfo, CharInfo());  //出现0次的无效的字符将不会参与huffman树的构造
