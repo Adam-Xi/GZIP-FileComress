@@ -15,9 +15,8 @@ FileCompressHuffman::FileCompressHuffman()
 //文件压缩主逻辑
 void FileCompressHuffman::CompressFile(const std::string& path)
 {
-	//============================================================
 	FILE* fIn = fopen(path.c_str(), "rb");  //必须以文本形式打开进行压缩
-	//============================================================
+
 	if (nullptr == fIn)
 	{
 		assert(false);
