@@ -102,6 +102,7 @@ private:
 			pRoot = nullptr;
 		}
 	}
+
 private:
 	Node* _pRoot;
 };
