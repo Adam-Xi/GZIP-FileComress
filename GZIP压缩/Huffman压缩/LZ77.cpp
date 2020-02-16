@@ -370,3 +370,4 @@ void  LZ77::UnCompressFile(const std::string& strFilePath)
 	fclose(fOUT);
 	fclose(fOutIn);
 }
+
