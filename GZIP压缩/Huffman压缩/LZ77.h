@@ -10,6 +10,7 @@ public:
 	~LZ77();
 	void CompressFile(const std::string& strFilePath, std::string& lz_newFileNameOnly);
 	void UnCompressFile(const std::string& strFilePath);
+
 private:
 	USH LongestMatch(USH matchHead, USH& MatchDistance, USH start);
 	void WriteFlag(FILE* fOUT, UCH& chFlag, UCH& bitCount, bool isLength);
