@@ -15,6 +15,7 @@ private:
 	void WriteFlag(FILE* fOUT, UCH& chFlag, UCH& bitCount, bool isLength);
 	void MergeFile(FILE* fOUT, ULL fileSize);
 	void FillWindow(FILE* fIN, size_t& lookAhead, USH& start);
+
 private:
 	UCH* _pWin;  // 用来保存待压缩数据的缓冲区
 	HashTable _hash;
