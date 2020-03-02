@@ -15,7 +15,10 @@ FileCompressHuffman::FileCompressHuffman()
 //文件压缩主逻辑
 void FileCompressHuffman::CompressFile(const std::string& path)
 {
-	FILE* fIn = fopen(path.c_str(), "rb");  
+	//============================================================
+	//FILE* fIn = fopen(path.c_str(), "rb");
+	FILE* fIn = fopen(path.c_str(), "rb");  //必须以文本形式打开进行压缩
+	//============================================================
 	if (nullptr == fIn)
 	{
 		assert(false);
@@ -60,20 +63,26 @@ void FileCompressHuffman::CompressFile(const std::string& path)
 	//3、获取每个字符的编码
 	GenerateHuffmanCode(tree.GetRoot());
 
+	fseek(fIn, 0, SEEK_SET);  // 重新定位文件指针
+
 	//4、用获取到的编码重新改写源文件
-	    //获取压缩后的文件名称，因为使用gzip算法压缩，所以约定压缩后的文件名称以".gzip"结尾
-	std::string NewFileNameOnly = GetFileNameOnly(path);
-	NewFileNameOnly += ".gzip";
+	//获取压缩后的文件名称，因为使用gzip算法压缩，所以约定压缩后的文件名称以".gzip"结尾
+	// std::string NewFileNameOnly = _FileName::GetFileNameOnly(path);
+	// NewFileNameOnly += ".gzip";
 	//std::cout << NewFileNameOnly << std::endl;  //测试
 
-	FILE* fOut = fopen(NewFileNameOnly.c_str(), "wb");
+	std::string newFileName = _FileName::GetFileNameOnly(path);
+	newFileName += ".gzip";
+	FILE* fOut = fopen(newFileName.c_str(), "wb");  // 最终输出文件(压缩后文件)
 	if (nullptr == fOut)
 	{
 		assert(false);
 		return;
 	}
+
+	// 写头部信息
 	WriteHead(fOut, path);
-	fseek(fIn, 0, SEEK_SET);
+
 	unsigned char ch = 0;
 	int bitCount = 0;
 	while (true)
@@ -151,21 +160,6 @@ void FileCompressHuffman::GenerateHuffmanCode(HuffmanTreeNode<CharInfo>* pRoot)
 	}
 }
 
-//获取文件名称后缀
-std::string FileCompressHuffman::GetFilePostFix(const std::string& fileName)
-{
-	return fileName.substr(fileName.rfind('.'));
-}
-
-//获取文件名称
-std::string FileCompressHuffman::GetFileNameOnly(const std::string& fileName)
-{
-	//return fileName.substr(fileName.rfind('/') + 1, fileName.rfind('.') - 2);
-	int pos1 = fileName.find_last_of('/');
-	int pos2 = fileName.find_last_of('.');
-	return fileName.substr(pos1 + 1, pos2 - pos1 - 1);
-}
-
 //写压缩文件头部信息，以此作为解压的依据
 void FileCompressHuffman::WriteHead(FILE*  fOut, const std::string& fileName)
 {
@@ -173,8 +167,8 @@ void FileCompressHuffman::WriteHead(FILE*  fOut, const std::string& fileName)
 
 	//写文件后缀
 	std::string strHead;
-	strHead += GetFilePostFix(fileName);
-	strHead += '\n';
+	// strHead += _FileName::GetFilePostFix(fileName);
+	// strHead += '\n';  // 将两个算法合并后此时huffman压缩时并不需要记录源文件名称，因为在LZ77压缩中已经记录过了
 
 	//写字符信息的总行数 及 次数信息
 	size_t lineCount = 0;
@@ -203,7 +197,7 @@ void FileCompressHuffman::WriteHead(FILE*  fOut, const std::string& fileName)
 }
 
 //解压缩主逻辑
-void FileCompressHuffman::UnCompressFile(const std::string& path)
+void FileCompressHuffman::UnCompressFile(const std::string& path, std::string& huff_newFileName)
 {
 	FILE* fIn = fopen(path.c_str(), "rb");
 	if (nullptr == fIn)
@@ -212,24 +206,24 @@ void FileCompressHuffman::UnCompressFile(const std::string& path)
 		return;
 	}
 
-	// 获取文件后缀
-	std::string strFilePostFix;
-	ReadLine(fIn, strFilePostFix);
+	// 获取文件后缀----不需要，将两种解压缩算法合并后，先用huffman解压缩，最后LZ77时获取文件后缀
+	// std::string strFilePostFix;
+	// ReadLine(fIn, strFilePostFix);
 
 	// 获取字符信息的总行数
 	std::string strCount;
-	ReadLine(fIn, strCount);
+	_Other::ReadLine(fIn, strCount);
 	int lineCount = atoi(strCount.c_str());
 
 	// 获取字符信息
 	for (int i = 0; i < lineCount; i++)
 	{
 		std::string strChCount;
-		ReadLine(fIn, strChCount);
+		_Other::ReadLine(fIn, strChCount);
 		if (strChCount.empty())
 		{  //读取到空行
 			strChCount += '\n';
-			ReadLine(fIn, strChCount);
+			_Other::ReadLine(fIn, strChCount);
 		}
 
 		// A:1
@@ -237,15 +231,15 @@ void FileCompressHuffman::UnCompressFile(const std::string& path)
 	}
 
 	// 获取解压后文件的名称
-	std::string NewFileName = GetFileNameOnly(path);
-	NewFileName += " -副本";
-	NewFileName += strFilePostFix;
+	huff_newFileName = _FileName::GetFileNameOnly(path);
+	huff_newFileName += "-副本";
+	huff_newFileName += ".lzp";
 	//std::cout << NewFileName << std::endl;  //测试
 
 	// 还原huffman树
 	HuffmanTree<CharInfo> tree(_fileInfo, CharInfo());
 
-	FILE* fOut = fopen(NewFileName.c_str(), "wb");  
+	FILE* fOut = fopen(huff_newFileName.c_str(), "wb");  //必须以文本文件形式打开文件进行写（解压缩）
 	if (nullptr == fOut)
 	{
 		assert(false);
@@ -310,20 +304,3 @@ void FileCompressHuffman::UnCompressFile(const std::string& path)
 	fclose(fOut);
 }
 
-//自行封装函数实现：一次读取一行
-//getline()也可以是实现该功能，不过参数需要传递输入流对象，而不是指针，所以不符合此处需求
-void FileCompressHuffman::ReadLine(FILE* fIn, std::string& strInfo)
-{
-	assert(fIn);
-
-	while (!feof(fIn))
-	{
-		char ch = fgetc(fIn);
-		if (ch == '\n')
-		{
-			break;
-		}
-
-		strInfo += ch;
-	}
-}

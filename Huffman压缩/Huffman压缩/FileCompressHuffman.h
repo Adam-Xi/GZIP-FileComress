@@ -1,13 +1,9 @@
 //基于huffman的压缩
 #pragma once
 
-#include <assert.h>
-#include <iostream>
 #include <vector>
-#include <string>
-#include <algorithm>  //reverse()
-#include <fstream>
 #include "Huffman.hpp"
+#include "common.h"
 
 
 //将权值用结构体表示,所以需要在huffman中的操作符进行重载
@@ -42,14 +38,11 @@ class FileCompressHuffman
 public:
 	FileCompressHuffman();
 	void CompressFile(const std::string& path);
-	void UnCompressFile(const std::string& path);
+	void UnCompressFile(const std::string& path, std::string& huff_newFileName);
 
 private:
 	void GenerateHuffmanCode(HuffmanTreeNode<CharInfo>* pRoot);  //生成huffman编码
 	void WriteHead(FILE*  fOut, const std::string& filePostFix);
-	std::string GetFilePostFix(const std::string& fileName);
-	std::string GetFileNameOnly(const std::string& fileName);
-	void ReadLine(FILE* fIn, std::string& strInfo);
 
 private:
 	std::vector<CharInfo> _fileInfo;
